@@ -1,0 +1,6 @@
+{
+  "name": "PokéPoly: Pixel League",
+  "description": "Retro pixel-art Pokémon Monopoly featuring iconic regions, collectible badges, tactical card battles, legendary trading, digital Pokédex, cloud saves, global leaderboard, offline PWA play, and performance analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

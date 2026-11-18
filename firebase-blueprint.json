@@ -1,0 +1,262 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private trainer profile and progression statistics for cross-platform cloud sync.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "avatarColor": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 20
+        },
+        "totalWins": {
+          "type": "number"
+        },
+        "totalGames": {
+          "type": "number"
+        },
+        "totalBattlesWon": {
+          "type": "number"
+        },
+        "totalBattlesPlayed": {
+          "type": "number"
+        },
+        "pokedexCaught": {
+          "type": "array"
+        },
+        "dailyStreak": {
+          "type": "number"
+        },
+        "lastPlayedDate": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "notificationsEnabled": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "avatarColor",
+        "totalWins",
+        "totalGames",
+        "totalBattlesWon",
+        "totalBattlesPlayed",
+        "pokedexCaught",
+        "dailyStreak",
+        "lastPlayedDate",
+        "notificationsEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CloudSave": {
+      "title": "CloudSave",
+      "description": "Cross-platform saved Monopoly board session stored under a user.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "slotName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "turnNumber": {
+          "type": "number"
+        },
+        "playerCount": {
+          "type": "number"
+        },
+        "activeRegion": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "statePayload": {
+          "type": "object"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "slotName",
+        "turnNumber",
+        "playerCount",
+        "activeRegion",
+        "statePayload",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MatchRecord": {
+      "title": "MatchRecord",
+      "description": "Analytics record for a completed or milestone game session.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "dateLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "winnerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "didWin": {
+          "type": "boolean"
+        },
+        "badgesCollected": {
+          "type": "number"
+        },
+        "battlesWon": {
+          "type": "number"
+        },
+        "battlesPlayed": {
+          "type": "number"
+        },
+        "finalNetWorth": {
+          "type": "number"
+        },
+        "favoriteType": {
+          "type": "string",
+          "maxLength": 20
+        },
+        "durationMinutes": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "dateLabel",
+        "winnerName",
+        "didWin",
+        "badgesCollected",
+        "battlesWon",
+        "battlesPlayed",
+        "finalNetWorth",
+        "favoriteType",
+        "durationMinutes",
+        "createdAt"
+      ]
+    },
+    "LeaderboardEntry": {
+      "title": "LeaderboardEntry",
+      "description": "Public global leaderboard standing without PII.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "trainerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "avatarColor": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 20
+        },
+        "score": {
+          "type": "number"
+        },
+        "wins": {
+          "type": "number"
+        },
+        "badgesCount": {
+          "type": "number"
+        },
+        "pokedexCount": {
+          "type": "number"
+        },
+        "winRate": {
+          "type": "number"
+        },
+        "streak": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "trainerName",
+        "avatarColor",
+        "score",
+        "wins",
+        "badgesCount",
+        "pokedexCount",
+        "winRate",
+        "streak",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only trainer profile, Pokedex progress, and streak metadata."
+    },
+    "/users/{userId}/cloudSaves/{saveId}": {
+      "schema": { "$ref": "#/entities/CloudSave" },
+      "description": "Owner-only cross-platform cloud save slots."
+    },
+    "/users/{userId}/matchHistory/{matchId}": {
+      "schema": { "$ref": "#/entities/MatchRecord" },
+      "description": "Owner-only match analytics history."
+    },
+    "/leaderboard/{userId}": {
+      "schema": { "$ref": "#/entities/LeaderboardEntry" },
+      "description": "Global trainer leaderboard standings (no PII)."
+    }
+  }
+}

@@ -1,0 +1,226 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isVerified() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function parentUserExists(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'avatarColor', 'totalWins', 'totalGames',
+          'totalBattlesWon', 'totalBattlesPlayed', 'pokedexCaught',
+          'dailyStreak', 'lastPlayedDate', 'notificationsEnabled',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'avatarColor', 'totalWins', 'totalGames',
+          'totalBattlesWon', 'totalBattlesPlayed', 'pokedexCaught',
+          'dailyStreak', 'lastPlayedDate', 'notificationsEnabled',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50
+        && data.avatarColor is string && data.avatarColor.size() >= 3 && data.avatarColor.size() <= 20
+        && data.totalWins is number && data.totalWins >= 0 && data.totalWins <= 100000
+        && data.totalGames is number && data.totalGames >= 0 && data.totalGames <= 100000
+        && data.totalBattlesWon is number && data.totalBattlesWon >= 0 && data.totalBattlesWon <= 500000
+        && data.totalBattlesPlayed is number && data.totalBattlesPlayed >= 0 && data.totalBattlesPlayed <= 500000
+        && data.pokedexCaught is list && data.pokedexCaught.size() <= 40
+        && (data.pokedexCaught.size() == 0 || data.pokedexCaught[0] is string)
+        && data.dailyStreak is number && data.dailyStreak >= 0 && data.dailyStreak <= 10000
+        && data.lastPlayedDate is string && data.lastPlayedDate.size() <= 20
+        && data.notificationsEnabled is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCloudSave(data) {
+      return data.keys().hasAll([
+          'ownerId', 'slotName', 'turnNumber', 'playerCount',
+          'activeRegion', 'statePayload', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'slotName', 'turnNumber', 'playerCount',
+          'activeRegion', 'statePayload', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.slotName is string && data.slotName.size() >= 1 && data.slotName.size() <= 60
+        && data.turnNumber is number && data.turnNumber >= 1 && data.turnNumber <= 10000
+        && data.playerCount is number && data.playerCount >= 2 && data.playerCount <= 4
+        && data.activeRegion is string && data.activeRegion.size() >= 1 && data.activeRegion.size() <= 30
+        && data.statePayload is map
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMatchRecord(data) {
+      return data.keys().hasAll([
+          'ownerId', 'dateLabel', 'winnerName', 'didWin',
+          'badgesCollected', 'battlesWon', 'battlesPlayed',
+          'finalNetWorth', 'favoriteType', 'durationMinutes', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'dateLabel', 'winnerName', 'didWin',
+          'badgesCollected', 'battlesWon', 'battlesPlayed',
+          'finalNetWorth', 'favoriteType', 'durationMinutes', 'createdAt'
+        ])
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.dateLabel is string && data.dateLabel.size() >= 1 && data.dateLabel.size() <= 30
+        && data.winnerName is string && data.winnerName.size() >= 1 && data.winnerName.size() <= 50
+        && data.didWin is bool
+        && data.badgesCollected is number && data.badgesCollected >= 0 && data.badgesCollected <= 32
+        && data.battlesWon is number && data.battlesWon >= 0 && data.battlesWon <= 500
+        && data.battlesPlayed is number && data.battlesPlayed >= 0 && data.battlesPlayed <= 500
+        && data.finalNetWorth is number && data.finalNetWorth >= 0 && data.finalNetWorth <= 10000000
+        && data.favoriteType is string && data.favoriteType.size() >= 1 && data.favoriteType.size() <= 20
+        && data.durationMinutes is number && data.durationMinutes >= 0 && data.durationMinutes <= 1440
+        && data.createdAt is timestamp;
+    }
+
+    function isValidLeaderboardEntry(data) {
+      return data.keys().hasAll([
+          'uid', 'trainerName', 'avatarColor', 'score', 'wins',
+          'badgesCount', 'pokedexCount', 'winRate', 'streak',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'trainerName', 'avatarColor', 'score', 'wins',
+          'badgesCount', 'pokedexCount', 'winRate', 'streak',
+          'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.uid == request.auth.uid
+        && data.trainerName is string && data.trainerName.size() >= 1 && data.trainerName.size() <= 50
+        && data.avatarColor is string && data.avatarColor.size() >= 3 && data.avatarColor.size() <= 20
+        && data.score is number && data.score >= 0 && data.score <= 10000000
+        && data.wins is number && data.wins >= 0 && data.wins <= 100000
+        && data.badgesCount is number && data.badgesCount >= 0 && data.badgesCount <= 100000
+        && data.pokedexCount is number && data.pokedexCount >= 0 && data.pokedexCount <= 40
+        && data.winRate is number && data.winRate >= 0 && data.winRate <= 100
+        && data.streak is number && data.streak >= 0 && data.streak <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'avatarColor', 'totalWins', 'totalGames',
+          'totalBattlesWon', 'totalBattlesPlayed', 'pokedexCaught',
+          'dailyStreak', 'lastPlayedDate', 'notificationsEnabled', 'updatedAt'
+        ]);
+      allow delete: if false;
+
+      match /cloudSaves/{saveId} {
+        allow get: if isValidId(userId) && isValidId(saveId) && isOwner(userId) && parentUserExists(userId);
+        allow list: if isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(saveId)
+          && isValidCloudSave(incoming())
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && parentUserExists(userId);
+        allow update: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(saveId)
+          && isValidCloudSave(incoming())
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'slotName', 'turnNumber', 'playerCount', 'activeRegion',
+            'statePayload', 'updatedAt'
+          ])
+          && parentUserExists(userId);
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(saveId) && parentUserExists(userId);
+      }
+
+      match /matchHistory/{matchId} {
+        allow get: if isValidId(userId) && isValidId(matchId) && isOwner(userId) && parentUserExists(userId);
+        allow list: if isOwner(userId) && existing().ownerId == request.auth.uid;
+        allow create: if isVerifiedOwner(userId)
+          && isValidId(userId)
+          && isValidId(matchId)
+          && isValidMatchRecord(incoming())
+          && incoming().createdAt == request.time
+          && parentUserExists(userId);
+        allow update: if false;
+        allow delete: if isVerifiedOwner(userId) && isValidId(userId) && isValidId(matchId) && parentUserExists(userId);
+      }
+    }
+
+    match /leaderboard/{userId} {
+      allow get: if isValidId(userId) && isSignedIn() && existing().score >= 0;
+      allow list: if isSignedIn() && existing().score >= 0;
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidLeaderboardEntry(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(userId)
+        && isValidLeaderboardEntry(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'trainerName', 'avatarColor', 'score', 'wins',
+          'badgesCount', 'pokedexCount', 'winRate', 'streak', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}

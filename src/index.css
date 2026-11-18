@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-pixel {
+    font-family: 'Silkscreen', monospace;
+    letter-spacing: -0.02em;
+  }
+
+  .font-mono-num {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.pixel-panel {
+  border-width: 2px;
+  box-shadow: 3px 3px 0 0 rgba(15, 23, 42, 0.85);
+}
+
+.dark .pixel-panel {
+  box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.9);
+}
+
+.pixel-btn {
+  border-width: 2px;
+  box-shadow: 2px 2px 0 0 rgba(15, 23, 42, 0.9);
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pixel-btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 rgba(15, 23, 42, 0.95);
+}
+
+.pixel-btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 rgba(15, 23, 42, 0.9);
+}
+
+.dark .pixel-btn {
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.95);
+}
+
+.pixel-art {
+  image-rendering: pixelated;
+}
